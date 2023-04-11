@@ -55,7 +55,7 @@ public class RequestService implements IRequestService {
     };
 
     // Schedule the task to run every day
-    long delay = 100; // 24 hours in seconds
+    long delay = 86400; // 24 hours in seconds
     scheduler.scheduleAtFixedRate(task, delay, delay, TimeUnit.SECONDS);
   }
 
