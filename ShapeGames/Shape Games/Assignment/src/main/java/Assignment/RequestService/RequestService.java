@@ -31,12 +31,11 @@ public class RequestService implements IRequestService {
   @Autowired
   private ICacheRepository cacheRepository;
 
-  private final AtomicInteger APIlimit = new AtomicInteger(3);
+  private final AtomicInteger APIlimit = new AtomicInteger(1000);
   private AtomicInteger APIcallcount = new AtomicInteger(0);
   Logger logger = LoggerFactory.getLogger(RequestService.class);
 
   //reseting the daily timer for API calls made
-  // @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
   public void resetcounter() {
     APIcallcount = new AtomicInteger(0);
     if (!cacheRepository.checkIfEmpty()) {
@@ -63,11 +62,9 @@ public class RequestService implements IRequestService {
   ///
   @Async("taskExecutor")
   private boolean incrementAndCheckAPIcallcount() {
-    logger.info("AT THE TOP this is how many calls: {}", APIcallcount.get());
   
     if (APIlimit.get() > APIcallcount.get()) {
       APIcallcount.incrementAndGet();
-      logger.info("AT THE TOP this is how many calls: {}", APIcallcount.get());
       return true;
     }
     return false;
@@ -90,7 +87,6 @@ public class RequestService implements IRequestService {
                     LocalDate.now()
                   );
                   cacheRepository.saveInCache(id, resultElement);
-                  logger.info("this is how many calls: {}", APIcallcount.get());
                   return resultElement.getPayLoad();
                 } else {
                   throw new APILimitReachedException("API limit has been reached.");
@@ -104,17 +100,13 @@ public class RequestService implements IRequestService {
     else if (
       element != null && LocalDate.now().isAfter(element.getExpiryDay())
     ) {
-      logger.info("Because it expired, we remove the following id: {}", id);
       //we remove the item from the cache
       cacheRepository.removeFromCache(id);
 
       //and then check if the APIlimit has been reached
       //and subsequently return the payload / or not
       if (incrementAndCheckAPIcallcount()) {
-        logger.info(
-          "And because we haven't reached the limit, we make APIcall giving us the total of: {}",
-          APIcallcount.get()
-        );
+
         return client
           .getLocationTemperature(id)
           .thenApply(locationTemperature -> {
@@ -134,8 +126,6 @@ public class RequestService implements IRequestService {
     else if (
       element != null && !LocalDate.now().isAfter(element.getExpiryDay())
     ) {
-      logger.info("In the last if: {}", APIcallcount.get());
-
       return CompletableFuture.completedFuture(element.getPayLoad());
     } else if(client.getLatestStatusCode() == 404 && !incrementAndCheckAPIcallcount()) {
         throw new InvalidInputException("City ID not found: " + id);
