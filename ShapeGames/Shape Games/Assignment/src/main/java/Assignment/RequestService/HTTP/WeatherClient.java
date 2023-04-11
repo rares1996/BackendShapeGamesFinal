@@ -30,8 +30,6 @@ public class WeatherClient implements IWeatherClient {
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(String.format(requestURL, cityId, apiKey))).build();
         var future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
         .thenApply((response -> {
-            logger.info(" statuscode in WC: {}", response.statusCode());
-
             latestStatusCode = response.statusCode();
             if (latestStatusCode == 404) {
                 throw new InvalidInputException("City ID not found: " + cityId);
@@ -43,8 +41,6 @@ public class WeatherClient implements IWeatherClient {
         return future;
     };
 
-
-    public Integer  getLatestStatusCode() {
         return latestStatusCode;
     }
     
