@@ -2,6 +2,7 @@
 Backend Assignment for ShapeGames
 
 [Shape Games - Backend Assignment.pdf](https://github.com/rares1996/ShapeGamesFinal/files/11523268/Shape.Games.-.Backend.Assignment.3.pdf)
+PROJECT IS IN SRC
 
 # How to open the project
 
